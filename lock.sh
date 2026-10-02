@@ -1,5 +1,5 @@
 ##!/bin/bash
-
+#t
 is_media_playing() {
     command -v playerctl &>/dev/null && playerctl status 2>/dev/null | grep -q "Playing"
 }
