@@ -8,10 +8,37 @@ from libqtile import hook
 
 @hook.subscribe.startup_once
 def autostart():
-    subprocess.Popen(['picom', '--config', os.path.expanduser('~/.config/picom/picom.conf')])
-    subprocess.Popen(['xset', 's', '120'])  # Timeout in seconds
-    subprocess.Popen(['xss-lock', '--', os.path.expanduser('~/.config/qtile/lock.sh')])
+     subprocess.Popen(['picom', '--config', os.path.expanduser('~/.config/picom/picom.conf')])
+     subprocess.Popen(['xset', 's', '190'])  # Timeout in seconds
+     subprocess.Popen(['xss-lock', '--', os.path.expanduser('~/.config/qtile/lock.sh')])
+def get_wifi():
+    # try:                                          # If you want SSID to show 
+   #     output = subprocess.check_output(
+   #         ["nmcli", "-t", "-f", "active,ssid", "dev", "wifi"],
+   #         text=True
+   #     )
+   #     for line in output.splitlines():
+   #         if line.startswith("yes:"):
+   #             return f"  {line.split(':')[1]}"
+   #     return "  No Wifi"
+   # except Exception:
+   #     return "  Error"
 
+     try:                                   # if you want wifi strength to show 
+        output = subprocess.check_output(
+            ["nmcli", "-t", "-f", "active,signal", "dev", "wifi"],
+            text=True
+        )
+        for line in output.splitlines():
+            if line.startswith("yes:"):
+                signal = line.split(':')[1]
+                return f"  {signal}%"  # Formats as " 85%"
+        return "  0%"
+     except Exception:
+        return "  --%"
+
+
+ # ===== MAIN =====
 
 mod = "mod4"
 keys = []
@@ -124,8 +151,7 @@ for i in groups:
             # ),
             # Or, use below if you prefer not to switch to that group.
             # # mod + shift + group number = move focused window to group
-            Key([mod, "shift"], i.name, lazy.window.togroup(i.name),
-                desc="move focused window to group {}".format(i.name)),
+            Key([mod, "shift"], i.name, lazy.window.togroup(i.name),desc="move focused window to group {}".format(i.name)),
         ]
     )
 
@@ -261,7 +287,7 @@ screens = [
                     measure_mem = 'G',                       # Turn 'G' to 'M' to see in MiB
                     format = 'Mem: {MemUsed:.2f} {mm}iB',
                 ),
-                #sep,
+                sep,
                 #widget.DF(
                 #    update_interval = 60,
                 #    foreground = colors[5],
@@ -272,8 +298,15 @@ screens = [
                 #    fmt = 'Disk: {}',
                 #    visible_on_warn = False,
                 #),
-      
-                sep,
+        
+                widget.GenPollText(              # Wifi , wlan0 , function , its function is defined at top of file
+                    foreground=colors[5],
+                    padding=8,
+                    update_interval=5,
+                    func=get_wifi,
+                ),
+  
+               sep,
                widget.Volume(
                   foreground=colors[7],
                   padding=8,
